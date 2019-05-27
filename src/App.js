@@ -1,10 +1,16 @@
 import React from 'react';
+import List from './components/List';
 
 
-function App() {
+function App(props) {
   return (
     <main className="App">
-      {/* content will go here */}
+      <header className="App-header">
+        <h1>Trelloyes!</h1>
+      </header>
+      <div className="app-list">
+        <List />
+      </div>
     </main>
   );
 }
