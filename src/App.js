@@ -1,5 +1,6 @@
 import React from 'react';
 import List from './components/List';
+import './App.css';
 
 
 class App extends React.Component {
@@ -10,7 +11,7 @@ class App extends React.Component {
         <header className="App-header">
           <h1>Trelloyes!</h1>
         </header>
-        <div className="app-list">
+        <div className="App-list">
           {mapListsToStore}
         </div>
       </main>
