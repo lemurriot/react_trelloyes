@@ -3,43 +3,86 @@ import List from './components/List';
 import './App.css';
 import STORE from './store';
 
+// why are these functions outside of the class? helper functions? also, why is one defined as an es6 arrow and the other a standard?
+
+const newRandomCard = () => {
+  const id = Math.random().toString(36).substring(2, 4)
+    + Math.random().toString(36).substring(2, 4);
+  return {
+    id,
+    title: `Random Card ${id}`,
+    content: 'lorem ipsum',
+  }
+}  
+
+function omitCard(obj, keyToOmit){
+  return Object.entries(obj).reduce(
+    (newObj, [key, value]) =>
+        key === keyToOmit ? newObj : {...newObj, [key]: value},
+    {}
+  );
+}
 
 class App extends React.Component {
   state = {
-    lists: STORE.lists.slice(),
-    allCards: STORE.allCards
+    store: STORE
   }
-
   
-  // omitCard = (obj, keyToOmit) => {
-  //   return Object.entries(obj).reduce(
-  //     (newObj, [key, value]) =>
-  //         key === keyToOmit ? newObj : {...newObj, [key]: value},
-  //     {}
-  //   );
-  // }
   handleDeleteCard = cardId => {
-    const stateCopy = this.state.lists.slice(0)
-    console.log(stateCopy)
-    const updatedList = stateCopy.forEach(list => {
-      // list.cardIds = list.cardIds.filter(id => id !== cardId)
+    const { lists, allCards } = this.state.store;
+      
+    const newLists = lists.map(list => ({
+      //returns an object, the spread operator sets up all the key/value pairs, the cardIds are filtered to disinclude the selected cardId... question: wouldn't the spread operator include the cardIds? does calling that key out by name pull it out of the spread?
+      ...list,
+      cardIds: list.cardIds.filter(id => id !== cardId)
+    }));
 
-      // WHY IS THIS MUTATING MY STATE??? FYI - Adding 'boom' to the string is just a test to demonstrate that my state is being mutated as a weird side effect. I thought .slice() is not supposed to mutate the original but make a copy?
-      list.cardIds+= 'boom'
+    const newCards = omitCard(allCards, cardId);
+
+    this.setState({
+      store: {
+        lists:  newLists,
+        allCards: newCards
+      }
     })
-    // console.log(updatedList)
-    // this.setState({
-    //   lists: updatedList
-    // })
+  };
 
-    // const newCardSet = this.omitCard(this.state.allCards, cardId)
-    // console.log(newCardSet);
-    // this.setState({
-    //   allCards: newCardSet
-    // })
+  handleAddRandomCard = listId => {
+    const newCard = newRandomCard()
+
+    const newLists = this.state.store.lists.map(list => {
+      if (list.id === listId){
+        return {
+          ...list,
+          cardIds: [...list.cardIds, newCard.id]
+        };
+      }
+      return list
+    })
+
+    this.setState({
+      store: {
+        lists: newLists,
+        allCards: {
+          ...this.state.store.allCards,
+          //what's up with the brackets?
+          [newCard.id]: newCard
+        }
+      }
+    })
   }
+
   render(){
-    const mapListsToStore = this.state.lists.map(list => <List key={list.id} header={list.header} onDeleteCard={ this.handleDeleteCard} cardContent={list.cardIds.map(id => this.state.allCards[id])}/>);
+    const mapListsToStore = this.state.store.lists.map(list => 
+      <List 
+        key={list.id} 
+        id={list.id}
+        header={list.header} 
+        onDeleteCard={this.handleDeleteCard} 
+        onAddRandomCard={this.handleAddRandomCard} 
+        cardContent={list.cardIds.map(id => this.state.store.allCards[id])}
+      />
+    );
     return (
       <main className="App">
         <header className="App-header">
